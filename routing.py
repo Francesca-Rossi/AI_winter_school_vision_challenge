@@ -59,8 +59,12 @@ class RoutingAgent:
     
     def get_image_bytes(self):
         if self.image_path:
-            image = Image.open(self.image_path)
-            return image
+            # Handle both PIL Image objects and file paths
+            if isinstance(self.image_path, Image.Image):
+                return self.image_path
+            else:
+                image = Image.open(self.image_path)
+                return image
 
         return None
 

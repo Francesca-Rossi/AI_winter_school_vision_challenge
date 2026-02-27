@@ -18,13 +18,56 @@ class Retriever:
         self.google_lens_data = pd.read_csv(self.google_lens_path)
 
     def retrieve(self, dataset_image_id):
-        # TODO 1: Retrieve wiki URLs based on dataset_image_id from Google Lens data
-        matches = self.google_lens_data[self.google_lens_data['image_id'] == dataset_image_id]
-        wiki_urls = matches['wiki_url'].dropna().tolist()[:self.top_k]
+        """
+        Retrieve wiki URLs based on dataset_image_id from Google Lens data
         
-        # TODO 2: Extract text from the retrieved wiki URLs and concatenate them to form the context
+        Args:
+            dataset_image_id: The image ID to lookup (e.g., "2715027")
+        
+        Returns:
+            Context text from retrieved Wikipedia articles
+        """
+        # Try both string and integer matching
+        # First, try to find matches as string
+        matches = self.google_lens_data[self.google_lens_data['dataset_image_id'].astype(str) == str(dataset_image_id)]
+        
+        # If no matches and dataset_image_id is numeric, try as integer
+        if matches.empty:
+            try:
+                dataset_image_id_int = int(dataset_image_id)
+                matches = self.google_lens_data[self.google_lens_data['dataset_image_id'] == dataset_image_id_int]
+            except (ValueError, TypeError):
+                pass
+        
+        if matches.empty:
+            print(f"Warning: No matches found for image_id {dataset_image_id}")
+            print(f"  Available image_ids (first 5): {self.google_lens_data['dataset_image_id'].head().tolist()}")
+            print(f"  DataFrame shape: {self.google_lens_data.shape}")
+            print(f"  Column dtype: {self.google_lens_data['dataset_image_id'].dtype}")
+            return "No context available."
+        
+        print(f"Found {len(matches)} match(es) for image_id {dataset_image_id}")
+        
+        # Get the lens_wiki_urls column (it's a string representation of a list)
+        wiki_urls_str = matches['lens_wiki_urls'].iloc[0]
+        
+        # Parse the string representation of the list into an actual list
+        import ast
+        try:
+            wiki_urls = ast.literal_eval(wiki_urls_str)
+        except:
+            print(f"Warning: Could not parse wiki URLs: {wiki_urls_str}")
+            wiki_urls = []
+        
+        # Limit to top_k URLs
+        wiki_urls = wiki_urls[:self.top_k]
+        
+        # Extract text from the retrieved wiki URLs
         context_parts = []
         for url in wiki_urls:
+            if not url:  # Skip empty strings
+                continue
+                
             if url in self.wikipedia:
                 entry = self.wikipedia[url]
                 # Handles both plain string and dict with a 'text' field
@@ -34,8 +77,13 @@ class Retriever:
                     text = entry.get('text') or entry.get('content') or entry.get('summary', '')
                     if text:
                         context_parts.append(text)
+            else:
+                print(f"Warning: URL {url} not found in knowledge base")
 
         context = "\n\n".join(context_parts)
+        
+        if not context:
+            return "No relevant context found in knowledge base."
 
         return context
 

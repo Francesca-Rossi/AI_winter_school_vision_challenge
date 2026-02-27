@@ -2,8 +2,9 @@ import easyocr
 import numpy as np
 from PIL import Image
 
+DATASET_BASE_PATH = '/leonardo_scratch/fast/tra26_minwinsc/MLLM_challenge'
 
-ocr_reader = easyocr.Reader(['en'], model_storage_directory='./hf_models', download_enabled=False) 
+ocr_reader = easyocr.Reader(['en'], model_storage_directory=f'{DATASET_BASE_PATH}/hf_models', download_enabled=False) 
 
 def tool_ocr_extractor(pil_image: Image.Image) -> str:
     """
