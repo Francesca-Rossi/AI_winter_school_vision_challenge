@@ -62,6 +62,9 @@ class Retriever:
         # Limit to top_k URLs
         wiki_urls = wiki_urls[:self.top_k]
         
+        print(f"Retrieved {len(wiki_urls)} URLs: {wiki_urls}")
+        print(f"Total KB entries: {len(self.wikipedia)}")
+        
         # Extract text from the retrieved wiki URLs
         context_parts = []
         for url in wiki_urls:
@@ -70,15 +73,22 @@ class Retriever:
                 
             if url in self.wikipedia:
                 entry = self.wikipedia[url]
+                print(entry)  # Debug: print the entry for the URL
                 # Handles both plain string and dict with a 'text' field
                 if isinstance(entry, str):
                     context_parts.append(entry)
+                    print(f"Found context for {url} (string, {len(entry)} chars)")
                 elif isinstance(entry, dict):
-                    text = entry.get('text') or entry.get('content') or entry.get('summary', '')
-                    if text:
+                    texts =  entry.get('section_texts', [])
+                    for text in texts:
                         context_parts.append(text)
+                        print(f"Found context for {url} (dict, {len(text)} chars)")
             else:
                 print(f"Warning: URL {url} not found in knowledge base")
+                # Try to find similar keys
+                similar_keys = [k for k in list(self.wikipedia.keys())[:5] if 'Smilax' in k or 'bona-nox' in k]
+                if similar_keys:
+                    print(f"  Similar keys in KB: {similar_keys[:3]}")
 
         context = "\n\n".join(context_parts)
         

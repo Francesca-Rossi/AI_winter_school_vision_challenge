@@ -283,7 +283,7 @@ if __name__ == "__main__":
     evqa_test = pd.read_csv(f'{DATASET_BASE_PATH}/evqa/evqa_test.csv')
     evqa_images = json_lib.load(open(f'{DATASET_BASE_PATH}/evqa/evqa_test_images_paths.json'))
     
-    # Example 1: RAG_grounding with EVQA dataset
+    # # Example 1: RAG_grounding with EVQA dataset
     logger.info("="*60)
     logger.info("EXAMPLE 1: RAG_grounding with EVQA Dataset")
     logger.info("="*60)
@@ -308,32 +308,60 @@ if __name__ == "__main__":
     )
     result_evqa = pipeline_evqa.pipeline()
     
-    # Example 2: Extract_data_form_image with DocVQA dataset
+    # Example 2: Extract_data_form_image with DocVQA dataset (MOCKED)
     logger.info("\n" + "="*60)
-    logger.info("EXAMPLE 2: Extract_data_form_image with DocVQA")
+    logger.info("EXAMPLE 2: Extract_data_form_image with DocVQA (MOCKED)")
     logger.info("="*60)
     
-    # Load DocVQA dataset example
-    from load_datasets import DocVQADataset
-    docvqa_dataset = DocVQADataset()
-    docvqa_sample = docvqa_dataset[0]  # Get first example
+    # Mock a DocVQA-style example using a sample document image
+    # Since loading the dataset has permission issues, we'll create a simulated example
+    logger.info("Using mocked DocVQA example to test OCR pipeline...")
     
-    docvqa_question = docvqa_sample['question']
-    docvqa_image = docvqa_sample['image']
-    docvqa_data_id = docvqa_sample['data_id']
-    docvqa_ground_truths = docvqa_sample['ground_truths']
-    
-    logger.info(f"Data ID: {docvqa_data_id}")
-    logger.info(f"Question: {docvqa_question}")
-    logger.info(f"Ground Truths: {docvqa_ground_truths}")
-    
-    pipeline_docvqa = Pipeline(
-        user_query=docvqa_question,
-        image_path=docvqa_image,  # PIL Image object
-        data_id=docvqa_data_id,
-        ground_truth=docvqa_ground_truths
-    )
-    result_docvqa = pipeline_docvqa.pipeline()
+    try:
+        # Try to find any document/receipt-like image in the EVQA dataset as mock
+        # Or use one of the existing images if available
+        import os
+        from PIL import Image
+        
+        # Look for a sample document image, or use EVQA image as fallback
+        mock_doc_paths = [
+            f'{DATASET_BASE_PATH}/docvqa/sample_doc.jpg',
+            f'{DATASET_BASE_PATH}/docvqa/sample_document.jpg',
+            evqa_images[0] if evqa_images else None  # Fallback to EVQA image
+        ]
+        
+        mock_doc_image = None
+        for path in mock_doc_paths:
+            if path and os.path.exists(path):
+                mock_doc_image = path
+                break
+        
+        if not mock_doc_image:
+            # Use first EVQA image as fallback
+            mock_doc_image = evqa_images[0]
+            logger.info("No sample document found, using EVQA image to test OCR tool...")
+        
+        docvqa_question = "What text can you extract from this document?"
+        docvqa_data_id = "docvqa_mock_001"
+        docvqa_ground_truths = ["sample text"]
+        
+        logger.info(f"Data ID: {docvqa_data_id}")
+        logger.info(f"Question: {docvqa_question}")
+        logger.info(f"Image Path: {mock_doc_image}")
+        
+        pipeline_docvqa = Pipeline(
+            user_query=docvqa_question,
+            image_path=mock_doc_image,
+            data_id=docvqa_data_id,
+            ground_truth=docvqa_ground_truths
+        )
+        result_docvqa = pipeline_docvqa.pipeline()
+        logger.info("DocVQA mock test completed successfully!")
+        
+    except Exception as e:
+        logger.error(f"DocVQA mock example failed: {e}")
+        import traceback
+        logger.error(traceback.format_exc())
     
     # Example 3: Discriminate with EVQA image
     logger.info("\n" + "="*60)

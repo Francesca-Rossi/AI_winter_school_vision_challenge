@@ -28,15 +28,16 @@ class Detector:
     @staticmethod
     def get_entity_from_query(query: str) -> str:
         #Implement a method to extract the entity from the query using for example spacy or any other NLP library
-        doc = nlp(query)
+        # doc = nlp(query)
+        # print(f'Doc: {doc}')
         
-        # Prefer named entities (e.g. "Eiffel Tower", "Paris")
-        if doc.ents:
-            return doc.ents[0].text
+        # # Prefer named entities (e.g. "Eiffel Tower", "Paris")
+        # if doc.ents:
+        #     return doc.ents[0].text
         
-        # Fallback: return the first noun chunk (e.g. "the red car")
-        for chunk in doc.noun_chunks:
-            return chunk.text
+        # # Fallback: return the first noun chunk (e.g. "the red car")
+        # for chunk in doc.noun_chunks:
+        #     return chunk.text
         
         # Last resort: return the full query
         return query
@@ -60,6 +61,7 @@ class Detector:
         #Finish implementing the logic to process the results and return the detected bounding boxes and labels
         detections = []
         for result in results:
+            print(f"Processing result: {result}")  # Debug: print the raw result
             boxes = result["boxes"].cpu().tolist()    # [[x_min, y_min, x_max, y_max], ...]
             scores = result["scores"].cpu().tolist()  # [score, ...]
             labels = result["labels"]                 # [label_str, ...]
@@ -70,5 +72,6 @@ class Detector:
                     "score": score,
                     "label": label,
                 })
+        print(f"Detections: {detections}")  # Debug: print the final detections
 
         return detections
