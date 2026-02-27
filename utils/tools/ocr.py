@@ -14,4 +14,8 @@ def tool_ocr_extractor(pil_image: Image.Image) -> str:
     
     results = ocr_reader.readtext(img_array)
     
-    #TODO: Finish implementing the logic to extract and return the text from the OCR results
+    #Finish implementing the logic to extract and return the text from the OCR results
+    #Each result is a tuple: (bounding_box, text, confidence)
+    extracted_text = " ".join(text for _, text, _ in results)
+    
+    return extracted_text

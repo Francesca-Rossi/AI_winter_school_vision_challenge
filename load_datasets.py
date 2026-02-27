@@ -6,15 +6,18 @@ from PIL import Image
 from datasets import load_dataset
 import csv
 
+DATASET_BASE_PATH = '/leonardo_scratch/fast/tra26_minwinsc/MLLM_challenge'
+
 class AmberDiscDataset(torch.utils.data.Dataset):
     def __init__(self):
         super().__init__()
 
 
-        with open('data/amber_disc/amber_disc.json', 'r') as f:
+        #amber_disc.json -> contiene id, image, query
+        with open(os.path.join(DATASET_BASE_PATH, 'data/amber_disc/amber_disc.json'), 'r') as f:
             self.data = json.load(f)
 
-        self.image_base_path = './data/amber_disc/images/'
+        self.image_base_path = os.path.join(DATASET_BASE_PATH, 'data/amber_disc/images/')
         
     def __getitem__(self, idx):
         sample = self.data[idx]
@@ -37,7 +40,7 @@ class DocVQADataset(torch.utils.data.Dataset):
     def __init__(self):
         super().__init__()
 
-        self.data = load_dataset('lmms-lab/DocVQA', 'DocVQA', cache_dir='./data/docvqa')['validation']
+        self.data = load_dataset('lmms-lab/DocVQA', 'DocVQA', cache_dir=os.path.join(DATASET_BASE_PATH, './data/docvqa'))['validation']
 
     def __getitem__(self, idx):
         sample = self.data[idx]
@@ -55,8 +58,8 @@ class EVQADataset(torch.utils.data.Dataset):
     def __init__(self, ):
         super().__init__()
 
-        self.data, self.header = self.load_csv_data('./data/evqa/evqa_test.csv')
-        with open('./data/evqa/evqa_test_images_paths.json', 'r') as f:
+        self.data, self.header = self.load_csv_data(os.path.join(DATASET_BASE_PATH, './data/evqa/evqa_test.csv'))
+        with open(os.path.join(DATASET_BASE_PATH, './data/evqa/evqa_test_images_paths.json'), 'r') as f:
             self.image_paths = json.load(f)
         
 
