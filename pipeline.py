@@ -3,6 +3,10 @@ import json
 import logging
 from transformers import AutoProcessor, Qwen2_5_VLForConditionalGeneration
 from routing import RoutingAgent
+from utils.tools.retriever import Retriever
+from utils.tools.ocr import tool_ocr_extractor
+from utils.tools.object_detector import tool_discriminate
+
 
 # Configure logging
 logging.basicConfig(
